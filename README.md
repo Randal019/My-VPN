@@ -2,8 +2,8 @@
 VPN user management panel with admin authentication, UUID generation, and QR-based client configuration.（Description)
 # VPN Panel
 
-A simple VPN user management panel.
-
+A simple VPN user management panel.(frontend only).
+Backend is private for security reasons.
 ## Features
 - Add user
 - Delete user
