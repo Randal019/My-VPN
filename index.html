@@ -115,6 +115,7 @@
           <div class="buttons">
             <button class="copy">Copy</button>
             <button class="qr">QR</button>
+            <button class="copyWin">Copy Config for Windows</button>
             <button class="delete">Delete</button>
           </div>
           <div class="qr-img"></div>
@@ -142,12 +143,39 @@
             tls: ""
           };
 
-          const vmessStr = "vmess://" + btoa(JSON.stringify(vmess));
+          const vmessLink = "vmess://" + btoa(JSON.stringify(vmess));
 
           const qrDiv = div.querySelector(".qr-img");
           qrDiv.innerHTML = `
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vmessStr)}">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vmessLink)}">
           `;
+        };
+
+        // Generate vmess link (for Windows copy)
+        const vmess = {
+          v: "2",
+          ps: user.username,
+          add: "45.76.217.135",
+          port: "10086",
+          id: user.uuid,
+          aid: "0",
+          net: "tcp",
+          type: "none",
+          host: "",
+          path: "",
+          tls: ""
+        };
+        const vmessLink = "vmess://" + btoa(JSON.stringify(vmess));
+
+        // Copy for Windows
+        div.querySelector(".copyWin").onclick = () => {
+          navigator.clipboard.writeText(vmessLink)
+            .then(() => {
+              alert("Copied! Paste into v2rayN");
+            })
+            .catch(() => {
+              alert("Copy failed");
+            });
         };
 
         // Delete user
