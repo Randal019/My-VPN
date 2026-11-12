@@ -96,7 +96,12 @@
   <div id="userList"></div>
 
   <script>
-    const API = "http://45.76.217.135:3000";
+    // 【修改 1】清理了原有的 REALITY 配置，统一使用你的域名和分流路径
+    const DOMAIN = "maplewave.xyz";
+    const WS_PATH = "/ray";
+
+    // 【修改 2】API 统一走 Nginx 的 HTTPS 端口，避免暴露 3000 端口
+    const API = `https://${DOMAIN}`;
 
     async function fetchUsers() {
       const res = await fetch(API + "/users");
@@ -113,13 +118,16 @@
           <div class="username">${user.username}</div>
           <div class="uuid">${user.uuid}</div>
           <div class="buttons">
-            <button class="copy">Copy</button>
-            <button class="qr">QR</button>
-            <button class="copyWin">Copy Config for Windows</button>
+            <button class="copy">Copy UUID</button>
+            <button class="qr">Show QR</button>
+            <button class="copyWin">Copy VLESS Link</button>
             <button class="delete">Delete</button>
           </div>
           <div class="qr-img"></div>
         `;
+
+        // 【修改 3】全新的 VLESS + WS + TLS 节点链接生成逻辑
+        const vlessLink = `vless://${user.uuid}@${DOMAIN}:443?encryption=none&security=tls&type=ws&path=${encodeURIComponent(WS_PATH)}&sni=${DOMAIN}#${encodeURIComponent(user.username)}`;
 
         // Copy UUID
         div.querySelector(".copy").onclick = () => {
@@ -129,49 +137,17 @@
 
         // Generate QR
         div.querySelector(".qr").onclick = () => {
-          const vmess = {
-            v: "2",
-            ps: user.username,
-            add: "45.76.217.135",
-            port: "10086",
-            id: user.uuid,
-            aid: "0",
-            net: "tcp",
-            type: "none",
-            host: "",
-            path: "",
-            tls: ""
-          };
-
-          const vmessLink = "vmess://" + btoa(JSON.stringify(vmess));
-
           const qrDiv = div.querySelector(".qr-img");
           qrDiv.innerHTML = `
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vmessLink)}">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(vlessLink)}">
           `;
         };
 
-        // Generate vmess link (for Windows copy)
-        const vmess = {
-          v: "2",
-          ps: user.username,
-          add: "45.76.217.135",
-          port: "10086",
-          id: user.uuid,
-          aid: "0",
-          net: "tcp",
-          type: "none",
-          host: "",
-          path: "",
-          tls: ""
-        };
-        const vmessLink = "vmess://" + btoa(JSON.stringify(vmess));
-
-        // Copy for Windows
+        // Copy for Windows / v2rayN
         div.querySelector(".copyWin").onclick = () => {
-          navigator.clipboard.writeText(vmessLink)
+          navigator.clipboard.writeText(vlessLink)
             .then(() => {
-              alert("Copied! Paste into v2rayN");
+              alert("Copied! Paste into v2rayN / Clash / Shadowrocket");
             })
             .catch(() => {
               alert("Copy failed");
